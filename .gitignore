@@ -1,3 +1,6 @@
+#Project specific
+secrets.h
+
 # Prerequisites
 *.d
 
