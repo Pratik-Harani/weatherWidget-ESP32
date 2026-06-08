@@ -8,6 +8,8 @@
 #define BG_COLOR TFT_WHITE
 #define FG_COLOR TFT_BLACK
 #define WEATHER_UPDATE_FREQUENCY_MINS 30
+#define SCREEN_WIDTH 240
+#define SCREEN_HEIGHT 135
 
 
 int BasePositionX = 120;
