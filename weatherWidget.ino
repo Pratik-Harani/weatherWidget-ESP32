@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 #include "connectToWifi.h"
+#include "WiFi.h"
 #include <ArduinoJson.h>
 
 //preferences
@@ -14,10 +15,11 @@
 
 int BasePositionX = 120;
 int BasePositionY = 55;
-int textSize = 4;
+int defaultTextSize = 4;
  
 
 TFT_eSPI tft = TFT_eSPI();
+
 
 //setting up weather stuff
 char server[] = "api.openweathermap.org";
@@ -44,7 +46,7 @@ void setup()
 
   tft.init();
   tft.fillScreen(BG_COLOR); 
-  tft.setTextSize(textSize);
+  tft.setTextSize(defaultTextSize);
   tft.setRotation(1);
   tft.setTextColor(FG_COLOR);
   tft.setTextDatum(MC_DATUM);
@@ -63,26 +65,34 @@ void setup()
 
 }
 
-void loop() {
-  WeatherData myData = getWeather();
-  tft.fillScreen(BG_COLOR);
-  tft.drawString(myData.temp + char(247) + "C", BasePositionX, BasePositionY);
-  Serial.println(myData.main);
 
-  int descriptionTextSize = textSize;
-  while (tft.textWidth(myData.description) > tft.width()){
-      //Serial.print("text width is: ");
-      // Serial.println(tft.textWidth(myData.description));
-      // Serial.print("screen width is: ");
-      // Serial.println(tft.width());
-      descriptionTextSize = descriptionTextSize - 1;
-      // Serial.print("new text size: ");
-      // Serial.println(textSize);
-      tft.setTextSize(descriptionTextSize);
+void fitTextToScreenSize(String text){
+  int currentTextSize = defaultTextSize;
+  while (tft.textWidth(text) > tft.width()){
+    currentTextSize -= 1;
+    tft.setTextSize(currentTextSize);
+  }
+}
+
+void loop() {
+
+  if (WiFi.status() == WL_CONNECTED){
+    WeatherData myData = getWeather();
+    tft.fillScreen(BG_COLOR);
+    tft.drawString(myData.temp + char(247) + "C", BasePositionX, BasePositionY);
+    Serial.println(myData.main);
+
+    fitTextToScreenSize(myData.description);
+    tft.drawString(myData.description, 120, 95);
+
+    tft.setTextSize(defaultTextSize);
+  }
+  else{
+    tft.fillScreen(BG_COLOR);
+    fitTextToScreenSize("WiFi Connection Failed");
+    tft.drawString("WiFi Connection Failed", BasePositionX, BasePositionY);
   }
 
-  tft.drawString(myData.description, 120, 95);
-  tft.setTextSize(textSize);
   delay(WEATHER_UPDATE_FREQUENCY_MINS * 60 * 1000);
 }
 
